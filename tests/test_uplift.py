@@ -2,11 +2,13 @@
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 
 from src.uplift.learners import (
+    DRLearner,
     SLearner,
     TLearner,
+    XLearner,
     qini_coefficient,
     qini_curve,
     uplift_at_k,
@@ -51,6 +53,17 @@ def test_learners_recover_persuadable_signal():
         model = Learner(LogisticRegression(max_iter=1000)).fit(X, t, y)
         up = model.predict_uplift(X)
         mask = X["persuadable"] == 1
+        assert up[mask].mean() > up[~mask].mean()
+
+
+def test_x_and_dr_learners_recover_persuadable_signal():
+    """The two-stage learners (X, DR) should also rank persuadables above inert
+    customers. They take a classifier for outcomes and a regressor for effects."""
+    X, t, y = _synthetic_uplift_data(n=8000)
+    mask = (X["persuadable"] == 1).to_numpy()
+    for Learner in (XLearner, DRLearner):
+        model = Learner(LogisticRegression(max_iter=1000), LinearRegression()).fit(X, t, y)
+        up = model.predict_uplift(X)
         assert up[mask].mean() > up[~mask].mean()
 
 

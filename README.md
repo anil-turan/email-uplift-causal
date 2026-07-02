@@ -36,8 +36,8 @@ own:
    sample-ratio mismatch.
 2. **Analyse rigorously** — power/sample-size up front, lift + confidence
    intervals, multiple-comparison correction, CUPED variance reduction.
-3. **Model heterogeneity** — S- and T-learner meta-learners implemented from
-   scratch, evaluated with the Qini curve.
+3. **Model heterogeneity** — S-, T-, X- and DR-learner meta-learners implemented
+   from scratch, evaluated with the Qini curve.
 4. **Drive a decision** — convert uplift scores into a profit-optimal targeting
    policy and compare against naive strategies.
 
@@ -54,7 +54,7 @@ email-uplift-causal/
 │   ├── experiment/
 │   │   └── ab.py             # sample size, z-test, SRM, CUPED, Bonferroni
 │   ├── uplift/
-│   │   └── learners.py       # S/T-learner + Qini curve/coefficient (from scratch)
+│   │   └── learners.py       # S/T/X/DR-learners + Qini curve/coefficient (from scratch)
 │   └── evaluation/
 │       └── plots.py          # Qini, uplift-decile, covariate-balance plots
 ├── notebooks/
@@ -93,18 +93,25 @@ shows **no sample-ratio mismatch** (χ² p = 0.996). CUPED with prior-spend as t
 covariate removes little variance here — a useful negative result: CUPED only
 pays off when the covariate genuinely predicts the metric.
 
-### 3. Uplift modeling — S-learner beats T-learner
+### 3. Uplift modeling — four meta-learners compared
 
 | Model | Qini coefficient |
 |-------|------------------|
 | **S-learner** | **42.6** |
+| X-learner | 21.3 |
 | T-learner | 11.0 |
+| DR-learner | 3.9 |
 | Random targeting | 0.0 |
 
 The T-learner differences two separately-trained models; on a ~15% base-rate
 binary outcome that noise dominates and its Qini curve sits close to random. The
-S-learner, sharing one model with treatment as a feature, ranks the
-persuadables far more reliably.
+**X-learner** repairs exactly this — its second stage imputes individual effects
+and fits a dedicated CATE regressor — and duly beats the T-learner. The
+**S-learner**, sharing one model with treatment as a feature, is the most stable
+ranker here. The **DR-learner**'s single-split doubly-robust pseudo-outcome is
+high-variance for *ranking* individual effects on a binary outcome (doubly-robust
+estimation pays off more for the *average* policy value — see the sibling recsys
+off-policy-evaluation project); cross-fitting would cut this variance.
 
 ![Qini curves](reports/figures/03_qini_curves.png)
 
