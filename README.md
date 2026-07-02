@@ -55,14 +55,17 @@ email-uplift-causal/
 │   │   └── ab.py             # sample size, z-test, SRM, CUPED, Bonferroni
 │   ├── uplift/
 │   │   └── learners.py       # S/T/X/DR-learners + Qini curve/coefficient (from scratch)
+│   ├── causal/
+│   │   └── did.py            # Difference-in-Differences + parallel-trends + event study
 │   └── evaluation/
 │       └── plots.py          # Qini, uplift-decile, covariate-balance plots
 ├── notebooks/
 │   ├── 01_eda_randomization.ipynb   # arm balance + randomisation check (SMD)
 │   ├── 02_ab_analysis.ipynb         # power, z-test, SRM, Bonferroni, CUPED
-│   ├── 03_uplift_modeling.ipynb     # S vs T learner, Qini curves
-│   └── 04_targeting_policy.ipynb    # profit curve + strategy comparison
-├── tests/                    # experiment + uplift unit tests
+│   ├── 03_uplift_modeling.ipynb     # S/T/X/DR learners, Qini curves
+│   ├── 04_targeting_policy.ipynb    # profit curve + strategy comparison
+│   └── 05_did.ipynb                 # Difference-in-Differences (observational case)
+├── tests/                    # experiment + uplift + causal (DiD) unit tests
 ├── data/raw/                 # Hillstrom CSV (not committed)
 ├── reports/figures/          # generated plots
 └── pyproject.toml
@@ -135,6 +138,25 @@ conversion), net profit peaks at an intermediate targeting depth:
 
 Same creative, same experiment — the extra profit comes entirely from *not*
 spending budget on zero- and negative-uplift customers.
+
+### 5. Difference-in-Differences — the observational case
+
+Notebooks 02–04 need a clean experiment. Notebook 05 handles the common case
+where none exists — a campaign rolled out to one region at one time — with DiD.
+On a semi-synthetic panel carrying a **known £5 effect**:
+
+| Estimator | Estimate | Verdict |
+|-----------|----------|---------|
+| Naive before-after | ~£8.3 | ❌ inflated — absorbs the common time trend |
+| **Difference-in-Differences** | **~£5.2** (95% CI covers £5) | ✅ recovers the truth |
+
+A **parallel-trends test** on the pre-period licenses the estimate, and an
+**event study** confirms it: flat pre-treatment, clean jump at rollout.
+
+![Event study](reports/figures/05_event_study.png)
+
+This closes the causal toolkit — **randomised uplift** for when you can
+experiment, **DiD** for when you can only observe.
 
 ---
 
