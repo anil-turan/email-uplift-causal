@@ -1,5 +1,11 @@
 # E-Mail Uplift & Causal Inference
 
+[![Python](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.4-F7931E)](https://scikit-learn.org/)
+[![LightGBM](https://img.shields.io/badge/LightGBM-4.3-green)](https://lightgbm.readthedocs.io/)
+[![SciPy](https://img.shields.io/badge/SciPy-1.13-8CAAE6)](https://scipy.org/)
+[![statsmodels](https://img.shields.io/badge/statsmodels-0.14-8C4FFF)](https://www.statsmodels.org/)
+
 Most marketing models predict *who will convert*. That is the wrong question. A
 customer who would buy anyway needs no e-mail, and a customer the e-mail annoys
 should never receive one. The right question is **causal**: for whom does the
