@@ -20,7 +20,9 @@ randomised into *Mens E-Mail*, *Womens E-Mail*, *No E-Mail*
 conversion **+119%** (p = 1.5e-13)
 **Best uplift model:** S-learner (Qini **42.6** vs T-learner 11.0)
 **Business impact:** uplift-targeting the top ~65% by predicted uplift yields
-**+14% net profit** vs e-mailing everyone, while contacting **35% fewer** people
+**+£286 net profit (+14%)** vs e-mailing everyone, while contacting **35%
+fewer** people — a real ranking (Qini confirms it), but the exact £ figure's
+95% bootstrap CI does not exclude zero on this test split (see Results §4)
 **Stack:** Python 3.11 · scikit-learn · LightGBM · SciPy · statsmodels · matplotlib
 
 ---
@@ -54,7 +56,8 @@ email-uplift-causal/
 │   ├── experiment/
 │   │   └── ab.py             # sample size, z-test, SRM, CUPED, Bonferroni
 │   ├── uplift/
-│   │   └── learners.py       # S/T/X/DR-learners + Qini curve/coefficient (from scratch)
+│   │   ├── learners.py       # S/T/X/DR-learners + Qini curve/coefficient (from scratch)
+│   │   └── policy_evaluation.py  # bootstrap CI on the targeting policy's net profit
 │   ├── causal/
 │   │   └── did.py            # Difference-in-Differences + parallel-trends + event study
 │   └── evaluation/
@@ -138,6 +141,27 @@ conversion), net profit peaks at an intermediate targeting depth:
 
 Same creative, same experiment — the extra profit comes entirely from *not*
 spending budget on zero- and negative-uplift customers.
+
+**Is the +14% real, or could this test split have gotten lucky?**
+`src/uplift/policy_evaluation.py` bootstraps the answer: resample the test
+set with replacement 2,000 times, recompute both policies' net profit on
+each resample using each customer's already-fitted uplift score, and take
+the percentile interval of the difference.
+
+| | Point estimate | 95% Bootstrap CI | Significant? |
+|---|---|---|---|
+| Uplift-targeted − Treat everyone | **+£286** | **[-£799, +£1,442]** | **No** |
+
+Reported honestly: the CI does not exclude zero. At this test-set size
+(~19,200 customers, ~1% base conversion rate), the incremental-conversion
+counts behind both policies are small enough that a £286 gap sits well
+inside sampling noise. This does **not** mean uplift-targeting doesn't
+work — the Qini coefficient above shows the model genuinely ranks
+persuadables above sleeping dogs — it means the specific **£-profit claim
+on this one test split** isn't precise enough to stake a rollout decision
+on alone. The honest recommendation is a monitored holdout (or a larger
+validation sample) before trusting the exact £ figure, not "the policy is
+worthless."
 
 ### 5. Difference-in-Differences — the observational case
 
